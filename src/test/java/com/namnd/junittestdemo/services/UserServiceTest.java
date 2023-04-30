@@ -15,7 +15,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+
+import static org.mockito.BDDMockito.given;
 
 @SpringBootTest
 public class UserServiceTest {
@@ -45,6 +50,7 @@ public class UserServiceTest {
                 .build();
 
         userDTO = UserDTO.builder()
+                .id(1L)
                 .email("namnd0312@gmail.com")
                 .typeOfUser("Personal")
                 .address("Hanoi")
@@ -56,7 +62,7 @@ public class UserServiceTest {
     @DisplayName("Test case when create a new User with duplicate email in data base then throw Exception")
     @Test
     public void givenExistedEmail_whenCreateNewUser_thenThrowException() throws Exception {
-        BDDMockito.given(userRepository.existsByEmail(userDTO.getEmail())).willReturn(true);
+        given(userRepository.existsByEmail(userDTO.getEmail())).willReturn(true);
         Assertions.assertThrows(LogicException.class, () -> {
             userService.saveUser(userDTO);
         });
@@ -65,8 +71,8 @@ public class UserServiceTest {
     @Test
     public void givenUserObject_whenCreateNewUser_thenReturnNewUser() throws Exception {
         User userExpected = userMapper.toEntity(userDTO);
-        BDDMockito.given(userRepository.existsByEmail(userDTO.getEmail())).willReturn(false);
-        BDDMockito.given(userRepository.save(userMapper.toEntity(userDTO))).willReturn(userExpected);
+        given(userRepository.existsByEmail(userDTO.getEmail())).willReturn(false);
+        given(userRepository.save(userMapper.toEntity(userDTO))).willReturn(userExpected);
         User userActual = userService.saveUser(userDTO);
         Assertions.assertEquals(userExpected, userActual);
     }
@@ -81,10 +87,51 @@ public class UserServiceTest {
 
 
     @Test
-    public  void whenFindUserById_thenReturnUser() throws LogicException {
+    public  void whenFindUserById_thenReturnUserDTOObject() throws LogicException {
         BDDMockito.when(this.userRepository.findById(1L)).thenReturn(Optional.of(user));
         BDDMockito.when(this.userMapper.toDto(user)).thenReturn(userDTO);
         UserDTO actualResult = this.userService.findById(1L);
         Assertions.assertNotNull(actualResult);
+    }
+
+    @Test
+    public void givenUserList_then_findAll_returnUserList(){
+        User user2 = User.builder()
+                .id(2L)
+                .email("namnd0312@gmail.com")
+                .typeOfUser("Personal")
+                .address("Hanoi")
+                .age(19)
+                .name("Nghiem Duc Nam")
+                .build();
+
+        List<User> users = List.of(user, user2);
+
+        given(this.userRepository.findAll()).willReturn(users);
+
+        List<UserDTO> listUser = this.userService.findAll();
+
+        Assertions.assertNotNull(listUser);
+        Assertions.assertEquals(2, listUser.size());
+    }
+
+    @Test
+    public void givenUserList_then_findAll_returnUserListEmpty(){
+        given(this.userRepository.findAll()).willReturn(Collections.emptyList());
+        List<UserDTO> listUser = this.userService.findAll();
+        Assertions.assertEquals(0, listUser.size());
+    }
+
+    @Test void givenUserDTO_thenUpdateUser_returnUserObject() throws Exception {
+        given(this.userRepository.findById(1L)).willReturn(Optional.of(user));
+        given(userRepository.save(user)).willReturn(user);
+        user.setName("update name");
+        user.setAge(100);
+
+        given(userMapper.toEntity(userDTO)).willReturn(user);
+        User userActual = this.userService.updateUser(userDTO);
+
+        Assertions.assertEquals("update name", userActual.getName());
+        Assertions.assertEquals(100, userActual.getAge());
     }
 }

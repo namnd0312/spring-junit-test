@@ -39,6 +39,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User updateUser(UserDTO userDto) throws Exception {
+        Optional<User> user = this.userRepository.findById(userDto.getId());
+
+        if(user.isEmpty()){
+            throw new LogicException(RECORD_NOT_EXISTED);
+        }
+
+        User entity = this.userMapper.toEntity(userDto);
+
+        return this.userRepository.save(entity);
+    }
+
+    @Override
     public UserDTO findById(Long id) throws LogicException {
 
         Optional<User> user = this.userRepository.findById(id);

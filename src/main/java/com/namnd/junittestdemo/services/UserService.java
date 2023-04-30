@@ -9,6 +9,7 @@ import java.util.List;
 public interface UserService {
 
     User saveUser(UserDTO userDto) throws Exception;
+    User updateUser(UserDTO userDto) throws Exception;
 
     UserDTO findById(Long id) throws LogicException;
     List<UserDTO> findAll();
