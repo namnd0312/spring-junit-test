@@ -7,6 +7,8 @@ import com.namnd.junittestdemo.models.User;
 import com.namnd.junittestdemo.repositories.UserRepository;
 import com.namnd.junittestdemo.services.impl.UserServiceImpl;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
@@ -27,9 +29,14 @@ public class UserServiceTest {
     @InjectMocks
     private UserServiceImpl userService;
 
-    @Test
-    public void givenExistedEmail_whenCreateNewUser_thenThrowException() throws Exception {
-        UserDTO userDTO = UserDTO.builder()
+    private User user;
+
+    private UserDTO userDTO;
+
+    @BeforeEach
+    void init(){
+        user = User.builder()
+                .id(1L)
                 .email("namnd0312@gmail.com")
                 .typeOfUser("Personal")
                 .address("Hanoi")
@@ -37,6 +44,18 @@ public class UserServiceTest {
                 .name("Nghiem Duc Nam")
                 .build();
 
+        userDTO = UserDTO.builder()
+                .email("namnd0312@gmail.com")
+                .typeOfUser("Personal")
+                .address("Hanoi")
+                .age(19)
+                .name("Nghiem Duc Nam")
+                .build();
+    }
+
+    @DisplayName("Test case when create a new User with duplicate email in data base then throw Exception")
+    @Test
+    public void givenExistedEmail_whenCreateNewUser_thenThrowException() throws Exception {
         BDDMockito.given(userRepository.existsByEmail(userDTO.getEmail())).willReturn(true);
         Assertions.assertThrows(LogicException.class, () -> {
             userService.saveUser(userDTO);
@@ -45,14 +64,6 @@ public class UserServiceTest {
 
     @Test
     public void givenUserObject_whenCreateNewUser_thenReturnNewUser() throws Exception {
-        UserDTO userDTO = UserDTO.builder()
-                .email("namnd0312@gmail.com")
-                .typeOfUser("Personal")
-                .address("Hanoi")
-                .age(19)
-                .name("Nghiem Duc Nam")
-                .build();
-
         User userExpected = userMapper.toEntity(userDTO);
         BDDMockito.given(userRepository.existsByEmail(userDTO.getEmail())).willReturn(false);
         BDDMockito.given(userRepository.save(userMapper.toEntity(userDTO))).willReturn(userExpected);
@@ -63,15 +74,6 @@ public class UserServiceTest {
     @Test
     public void whenFindUserByIdNotExisted_thenThrowException() throws LogicException {
 
-        User user= User.builder()
-                .id(1L)
-                .email("namnd0312@gmail.com")
-                .typeOfUser("Personal")
-                .address("Hanoi")
-                .age(19)
-                .name("Nghiem Duc Nam")
-                .build();
-
         BDDMockito.when(this.userRepository.findById(1L)).thenReturn(Optional.empty());
 
         Assertions.assertThrows(LogicException.class, () -> this.userService.findById(1L));
@@ -80,24 +82,6 @@ public class UserServiceTest {
 
     @Test
     public  void whenFindUserById_thenReturnUser() throws LogicException {
-        User user= User.builder()
-                .id(1L)
-                .email("namnd0312@gmail.com")
-                .typeOfUser("Personal")
-                .address("Hanoi")
-                .age(19)
-                .name("Nghiem Duc Nam User")
-                .build();
-
-        UserDTO userDTO = UserDTO.builder()
-                .id(1L)
-                .email("namnd0312@gmail.com")
-                .typeOfUser("Personal")
-                .address("Hanoi")
-                .age(19)
-                .name("Nghiem Duc Nam UerDTO")
-                .build();
-
         BDDMockito.when(this.userRepository.findById(1L)).thenReturn(Optional.of(user));
         BDDMockito.when(this.userMapper.toDto(user)).thenReturn(userDTO);
         UserDTO actualResult = this.userService.findById(1L);
