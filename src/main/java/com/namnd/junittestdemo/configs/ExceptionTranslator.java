@@ -63,7 +63,7 @@ public class ExceptionTranslator extends RequestBodyAdviceAdapter {
     public ResponseEntity<?> methodArgumentNotValidException(MethodArgumentNotValidException ex) {
 
         HashMap<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(e -> errors.put(e.getField(), e.getField() + " " + e.getDefaultMessage()));
+        ex.getBindingResult().getFieldErrors().forEach(e -> errors.put(e.getObjectName(), e.getObjectName() + " " + e.getDefaultMessage()));
         String message = errors.values().stream().collect(Collectors.toList()).stream().collect(Collectors.joining("#"));
         return new ResponseEntity<>(Response.error(PARAMETER_IN_VALID, message), HttpStatus.BAD_REQUEST);
     }

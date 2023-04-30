@@ -8,7 +8,12 @@ import com.namnd.junittestdemo.repositories.UserRepository;
 import com.namnd.junittestdemo.services.UserService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import static com.namnd.junittestdemo.enums.MessageEnum.EMAIL_ALREADY_IN_USE;
+import static com.namnd.junittestdemo.enums.MessageEnum.RECORD_NOT_EXISTED;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -31,5 +36,21 @@ public class UserServiceImpl implements UserService {
         User user = this.userMapper.toEntity(userDto);
 
         return this.userRepository.save(user);
+    }
+
+    @Override
+    public UserDTO findById(Long id) throws LogicException {
+
+        Optional<User> user = this.userRepository.findById(id);
+
+        if(user.isEmpty()){
+            throw new LogicException(RECORD_NOT_EXISTED);
+        }
+        return userMapper.toDto(user.get());
+    }
+
+    @Override
+    public List<UserDTO> findAll() {
+        return this.userRepository.findAll().stream().map(userMapper::toDto).collect(Collectors.toList());
     }
 }

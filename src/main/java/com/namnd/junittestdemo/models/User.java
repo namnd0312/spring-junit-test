@@ -1,7 +1,6 @@
 package com.namnd.junittestdemo.models;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -10,6 +9,9 @@ import java.io.Serializable;
 @Table(name = "users")
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class User implements Serializable {
 
     @Id
@@ -22,4 +24,9 @@ public class User implements Serializable {
 
     @Column(nullable = false)
     private String email;
+
+    @Column(nullable = false)
+    private String typeOfUser;
+
+    private String address;
 }
